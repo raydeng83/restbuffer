@@ -5,4 +5,6 @@ import com.ldeng.restbuffer.model.Person;
 public interface PersonService {
 
     Person getPersonByName(String name);
+
+    Person savePerson(Person person);
 }

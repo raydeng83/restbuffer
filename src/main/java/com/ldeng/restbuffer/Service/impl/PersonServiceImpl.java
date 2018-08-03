@@ -22,4 +22,11 @@ public class PersonServiceImpl implements PersonService{
 
         return person;
     }
+
+    @Override
+    public Person savePerson(Person person) {
+        person = personRepository.save(person);
+
+        return person;
+    }
 }
