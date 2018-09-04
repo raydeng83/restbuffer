@@ -129,11 +129,13 @@ public class BufferServiceImpl implements BufferService {
 
     @Override
     public String createUser(Person person) throws IOException, InterruptedException {
+        person.setStatus("pending");
         person = personService.savePerson(person);
         CreatePersonQueue personQueue = new CreatePersonQueue();
 
         personQueue.setPerson(person);
         personQueue = createPersonQueueRepository.save(personQueue);
+
 
         int statusCode = createUserRest(person);
 
@@ -143,6 +145,7 @@ public class BufferServiceImpl implements BufferService {
 
         if (firstDigit == 2) {
             logger.info("USer {} created successfully", person.getName());
+            person.setStatus("created");
             FinishedCreationQueue finishedCreationQueue = new FinishedCreationQueue();
             finishedCreationQueue.setPerson(person);
             finishedCreationQueue = finishedCreationQueueRepository.save(finishedCreationQueue);
