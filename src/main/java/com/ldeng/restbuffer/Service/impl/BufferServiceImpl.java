@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldeng.restbuffer.RestbufferApplication;
 import com.ldeng.restbuffer.Service.BufferService;
 import com.ldeng.restbuffer.Service.PersonService;
+import com.ldeng.restbuffer.model.CreatePersonQueue;
+import com.ldeng.restbuffer.model.FinishedCreationQueue;
 import com.ldeng.restbuffer.model.Person;
+import com.ldeng.restbuffer.repository.CreatePersonQueueRepository;
+import com.ldeng.restbuffer.repository.FinishedCreationQueueRepository;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
@@ -35,6 +39,13 @@ public class BufferServiceImpl implements BufferService {
     @Autowired
     private PersonService personService;
 
+    @Autowired
+    private CreatePersonQueueRepository createPersonQueueRepository;
+
+    @Autowired
+    private FinishedCreationQueueRepository finishedCreationQueueRepository;
+
+
     public void serviceCall(Person person) throws IOException {
         String url = "http://localhost:8081/person";
 
@@ -60,9 +71,9 @@ public class BufferServiceImpl implements BufferService {
 
     @Override
     public int createUserRest(Person person) throws IOException, InterruptedException {
-        String url = "http://localhost:5050/rest/api/2/user";
+        String url = "http://localhost:8181/rest/api/2/user";
 
-        String auth = "admin" + ":" + "password";
+        String auth = "ray.deng83" + ":" + "Rochester24";
         byte[] encodedAuth = Base64.encodeBase64(
                 auth.getBytes(StandardCharsets.ISO_8859_1));
         String authHeader = "Basic " + new String(encodedAuth);
@@ -119,6 +130,10 @@ public class BufferServiceImpl implements BufferService {
     @Override
     public String createUser(Person person) throws IOException, InterruptedException {
         person = personService.savePerson(person);
+        CreatePersonQueue personQueue = new CreatePersonQueue();
+
+        personQueue.setPerson(person);
+        personQueue = createPersonQueueRepository.save(personQueue);
 
         int statusCode = createUserRest(person);
 
@@ -128,6 +143,11 @@ public class BufferServiceImpl implements BufferService {
 
         if (firstDigit == 2) {
             logger.info("USer {} created successfully", person.getName());
+            FinishedCreationQueue finishedCreationQueue = new FinishedCreationQueue();
+            finishedCreationQueue.setPerson(person);
+            finishedCreationQueue = finishedCreationQueueRepository.save(finishedCreationQueue);
+
+            createPersonQueueRepository.delete(personQueue);
         } else {
             logger.warn("User {} created failed. Will try again automatically later.", person.getName());
         }

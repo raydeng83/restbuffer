@@ -17,10 +17,14 @@ public class Person {
     private String emailAddress;
     private String displayName;
     private boolean notification;
+    private String status;
 
     @Column(name = "CREATED_DATE")
     @CreationTimestamp
     private LocalDateTime createdDateTime;
+
+    @OneToOne
+    private CreatePersonQueue createPersonQueue;
 
     public Long getId() {
         return id;
@@ -76,5 +80,21 @@ public class Person {
 
     public void setNotification(boolean notification) {
         this.notification = notification;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public CreatePersonQueue getCreatePersonQueue() {
+        return createPersonQueue;
+    }
+
+    public void setCreatePersonQueue(CreatePersonQueue createPersonQueue) {
+        this.createPersonQueue = createPersonQueue;
     }
 }
