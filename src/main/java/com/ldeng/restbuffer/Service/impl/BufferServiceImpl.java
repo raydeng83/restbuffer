@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Service
 public class BufferServiceImpl implements BufferService {
@@ -111,11 +112,11 @@ public class BufferServiceImpl implements BufferService {
 
                 if (!success) {
                     logger.info("Retry after 10 seconds...");
-                    Thread.sleep(10000); // wait 2 seconds before retrying
+                    Thread.sleep(10000); // wait 10 seconds before retrying
                 }
             } catch (Exception e) {
                 logger.info("Connection error. Retry after 10 seconds...");
-                Thread.sleep(10000); // wait 2 seconds before retrying
+                Thread.sleep(10000); // wait 10 seconds before retrying
             }
         }
 
@@ -128,14 +129,21 @@ public class BufferServiceImpl implements BufferService {
     }
 
     @Override
-    public String createUser(Person person) throws IOException, InterruptedException {
+    public String savePerson(Person person){
         person.setStatus("pending");
         person = personService.savePerson(person);
+
         CreatePersonQueue personQueue = new CreatePersonQueue();
 
         personQueue.setPerson(person);
         personQueue = createPersonQueueRepository.save(personQueue);
 
+        return "User " + person.getName() + " creation queued successfully";
+    }
+
+    @Override
+    public String createUser(CreatePersonQueue personQueue) throws IOException, InterruptedException {
+        Person person = personQueue.getPerson();
 
         int statusCode = createUserRest(person);
 
@@ -156,6 +164,26 @@ public class BufferServiceImpl implements BufferService {
         }
 
         return "User " + person.getName() + " creation queued successfully";
+    }
+
+    @Override
+    public void checkItems() throws IOException, InterruptedException {
+        while(true) {
+            List<CreatePersonQueue> queueList = (List<CreatePersonQueue>) createPersonQueueRepository.findAll();
+
+            logger.info("Checking reqeust queue...");
+
+            if (queueList.size() > 0) {
+                logger.info("Found item in queue.");
+                for (CreatePersonQueue queue : queueList) {
+                    createUser(queue);
+                }
+            } else {
+                logger.info("No item is found.");
+            }
+
+            Thread.sleep(10000); // wait 10 seconds before retrying
+        }
     }
 
 }

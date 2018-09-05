@@ -1,5 +1,6 @@
 package com.ldeng.restbuffer;
 
+import com.ldeng.restbuffer.Service.BufferService;
 import com.ldeng.restbuffer.model.Person;
 import com.ldeng.restbuffer.repository.PersonRepository;
 import org.slf4j.Logger;
@@ -21,6 +22,9 @@ public class RestbufferApplication implements CommandLineRunner{
 	@Autowired
 	private PersonRepository personRepository;
 
+	@Autowired
+	private BufferService bufferService;
+
 	public static void main(String[] args) {
 		SpringApplication.run(RestbufferApplication.class, args);
 	}
@@ -35,5 +39,7 @@ public class RestbufferApplication implements CommandLineRunner{
 		} else {
 			personRepository.save(person);
 		}
+
+		bufferService.checkItems();
 	}
 }

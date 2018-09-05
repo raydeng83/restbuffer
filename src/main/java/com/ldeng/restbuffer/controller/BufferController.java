@@ -19,7 +19,7 @@ public class BufferController {
 
     @RequestMapping(value = "/createUser", method = RequestMethod.POST)
     public String createUser(@RequestBody Person person) throws IOException, InterruptedException {
-        String responseString = bufferService.createUser(person);
+        String responseString = bufferService.savePerson(person);
 
         return responseString;
     }
